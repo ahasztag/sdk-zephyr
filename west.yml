@@ -21,6 +21,8 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://github.com/zephyrproject-rtos
+    - name: ahasztag
+      url-base: https://github.com/ahasztag
 
   #
   # Please add items below based on alphabetical order
@@ -91,7 +93,8 @@ manifest:
       groups:
         - hal
     - name: hal_nordic
-      revision: a85bb3676d61d1ae202088e0d3fec556056b2c9e
+      remote: ahasztag
+      revision: DRX_ADJUST_fix_test
       path: modules/hal/nordic
       groups:
         - hal
