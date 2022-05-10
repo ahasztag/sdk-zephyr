@@ -1079,7 +1079,7 @@ void nrf_802154_transmitted_raw(uint8_t *frame,
 
 #if IS_ENABLED(CONFIG_NET_PKT_TIMESTAMP)
 		nrf5_data.ack_frame.time =
-			nrf_802154_first_symbol_timestamp_get(
+			nrf_802154_mhr_timestamp_get(
 				metadata->data.transmitted.time, nrf5_data.ack_frame.psdu[0]);
 #endif
 	}
