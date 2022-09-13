@@ -110,6 +110,7 @@ void nrf_802154_spinel_response_notifier_free(nrf_802154_spinel_notify_buff_t *p
 volatile int arha11 = 0;
 volatile uint32_t arha11_prop = 0;
 volatile uint32_t arha11_aw_prop = 0;
+volatile uint32_t arha11_prop_2 = 0;
 
 void nrf_802154_spinel_response_notifier_property_notify(spinel_prop_key_t property,
 					      const void       *p_data,
@@ -122,10 +123,13 @@ void nrf_802154_spinel_response_notifier_property_notify(spinel_prop_key_t prope
 		arha11 = 2;
 		assert(notify_buff.free);
 
+		arha11 = 5;
 		notify_buff.free = false;
+        arha11_prop_2 = property;
 		awaited_property = AWAITED_PROPERTY_NONE;
 
 		assert(data_len <= sizeof(notify_buff.buff.data));
+		arha11 = 6;
 
 		memcpy(notify_buff.buff.data, p_data, data_len);
 		notify_buff.buff.data_len = data_len;
