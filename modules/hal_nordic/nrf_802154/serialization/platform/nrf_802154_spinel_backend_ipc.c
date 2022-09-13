@@ -23,6 +23,14 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 static K_SEM_DEFINE(edp_bound_sem, 0, 1);
 static struct ipc_ept ept;
 
+volatile int arha5 = 0;
+volatile int arha6 = 0;
+volatile int arha7 = 0;
+volatile int arha_err1 = 0;
+volatile int arha_err2 = 0;
+volatile int arha_ret1 = 0;
+volatile int arha_ret2 = 0;
+
 static void endpoint_bound(void *priv)
 {
 	k_sem_give(&edp_bound_sem);
@@ -94,9 +102,11 @@ static uint8_t get_rb_idx_plus_1(uint8_t i)
 static nrf_802154_ser_err_t spinel_packet_from_thread_send(const uint8_t *data, uint32_t len)
 {
 	if (get_rb_idx_plus_1(wr_idx) == rd_idx) {
+        arha5 = 7;
 		LOG_ERR("No spinel buffer available to send a new packet");
 		return NRF_802154_SERIALIZATION_ERROR_BACKEND_FAILURE;
 	}
+    arha5 = 8;
 
 	LOG_DBG("Scheduling %u bytes for send thread", len);
 
@@ -105,6 +115,7 @@ static nrf_802154_ser_err_t spinel_packet_from_thread_send(const uint8_t *data, 
 	wr_idx = get_rb_idx_plus_1(wr_idx);
 	buf->len = len;
 	memcpy(buf->data, data, len);
+    arha5 = 9;
 
 	k_sem_give(&send_sem);
 	return (nrf_802154_ser_err_t)len;
@@ -113,22 +124,32 @@ static nrf_802154_ser_err_t spinel_packet_from_thread_send(const uint8_t *data, 
 static void spinel_packet_send_thread_fn(void *arg1, void *arg2, void *arg3)
 {
 	LOG_DBG("Spinel backend send thread started");
+    arha6 = 1;
 	while (true) {
 		k_sem_take(&send_sem, K_FOREVER);
+        arha6 = 2;
 		struct ringbuffer *buf = &ring_buffer[rd_idx];
 		uint32_t expected_ret = buf->len;
 
 		LOG_DBG("Sending %u bytes from send thread", buf->len);
 		int ret = ipc_service_send(&ept, buf->data, buf->len);
+        arha6 = 3;
 
 		rd_idx = get_rb_idx_plus_1(rd_idx);
 
 		if (ret != expected_ret) {
+            arha6 = 4;
+			arha_err2 = ret;
 			nrf_802154_ser_err_data_t err = {
 				.reason = NRF_802154_SERIALIZATION_ERROR_BACKEND_FAILURE,
 			};
 
 			nrf_802154_serialization_error(&err);
+		}
+        else
+		{
+			arha6 = 5;
+			arha_ret2 = ret;
 		}
 	}
 }
@@ -139,12 +160,30 @@ K_THREAD_DEFINE(spinel_packet_send_thread, SEND_THREAD_STACK_SIZE,
 nrf_802154_ser_err_t nrf_802154_spinel_encoded_packet_send(const void *p_data,
 							   size_t      data_len)
 {
+	arha5 = 1;
 	if (k_is_in_isr()) {
+		arha5 = 2;
 		return spinel_packet_from_thread_send(p_data, data_len);
 	}
 
+	arha5 = 3;
 	LOG_DBG("Sending %u bytes directly", data_len);
+	arha7 = 1;
 	int ret = ipc_service_send(&ept, p_data, data_len);
+	arha7 = 2;
+
+    if(ret < 0)
+    {
+		arha5 = 5;
+		arha7 = 3;
+        arha_err1 = ret;
+	}
+    else
+	{
+		arha5 = 6;
+		arha7 = 4;
+        arha_ret1 = ret;
+	}
 
 	return ((ret < 0) ? NRF_802154_SERIALIZATION_ERROR_BACKEND_FAILURE
 			  : (nrf_802154_ser_err_t) ret);
