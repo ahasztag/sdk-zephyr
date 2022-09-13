@@ -30,6 +30,7 @@ volatile int arha_err1 = 0;
 volatile int arha_err2 = 0;
 volatile int arha_ret1 = 0;
 volatile int arha_ret2 = 0;
+volatile int arha9 = 0;
 
 static void endpoint_bound(void *priv)
 {
@@ -40,7 +41,9 @@ static void endpoint_received(const void *data, size_t len, void *priv)
 {
 	LOG_DBG("Received message of %u bytes.", len);
 
+	arha9 = 1;
 	nrf_802154_spinel_encoded_packet_received(data, len);
+	arha9 = 2;
 }
 
 static struct ipc_ept_cfg ept_cfg = {
