@@ -107,11 +107,19 @@ void nrf_802154_spinel_response_notifier_free(nrf_802154_spinel_notify_buff_t *p
 	p_notify_buff_free->free = true;
 }
 
+volatile int arha11 = 0;
+volatile uint32_t arha11_prop = 0;
+volatile uint32_t arha11_aw_prop = 0;
+
 void nrf_802154_spinel_response_notifier_property_notify(spinel_prop_key_t property,
 					      const void       *p_data,
 					      size_t            data_len)
 {
+	arha11 = 1;
+    arha11_prop = property;
+    arha11_aw_prop = awaited_property;
 	if (property == awaited_property) {
+		arha11 = 2;
 		assert(notify_buff.free);
 
 		notify_buff.free = false;
@@ -124,6 +132,7 @@ void nrf_802154_spinel_response_notifier_property_notify(spinel_prop_key_t prope
 
 		k_sem_give(&notify_sem);
 	} else {
+		arha11 = 3;
 		/* TODO: Determine if this is an error condition. */
 		NRF_802154_SPINEL_LOG_RAW("Received property that noone is waiting for\n");
 	}
