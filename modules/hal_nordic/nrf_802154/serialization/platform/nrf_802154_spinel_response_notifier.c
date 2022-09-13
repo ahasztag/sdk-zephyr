@@ -47,13 +47,13 @@ volatile uint32_t arha_curprop1 = 0;
 volatile uint32_t arha_curprop2 = 0;
 volatile uint32_t arha_curprop3 = 0;
 
-static void set_arha14(int val)
+static void set_arha14(int val, uint32_t curprop)
 {
-	if(0x3c1b == arha_curprop1)
+	if(0x3c1b == curprop)
     {
 		arha14 = val;
 	}
-    if(0x3c33 == arha_curprop1)
+    if(0x3c33 == curprop)
     {
 		arha16 = val;
 	}
@@ -96,9 +96,10 @@ nrf_802154_spinel_notify_buff_t *nrf_802154_spinel_response_notifier_property_aw
 {
 	nrf_802154_spinel_notify_buff_t *result = NULL;
 	int ret;
+    uint32_t loc_prop = arha_curprop1;
 
 	k_timeout_t k_timeout;
-	set_arha14(1);
+	set_arha14(1, loc_prop);
 	if (timeout == 0) {
 		k_timeout = K_NO_WAIT;
 	} else if (timeout == SPINEL_RESPONSE_NOTIFIER_INF_TIMEOUT) {
@@ -106,21 +107,21 @@ nrf_802154_spinel_notify_buff_t *nrf_802154_spinel_response_notifier_property_aw
 	} else {
 		k_timeout = K_MSEC(timeout);
 	}
-	set_arha14(2);
+	set_arha14(2, loc_prop);
 
 	if (k_sem_take(&notify_sem, k_timeout) == 0) {
-		set_arha14(3);
+		set_arha14(3, loc_prop);
 		result = &notify_buff.buff;
 	} else {
-		set_arha14(4);
+		set_arha14(4, loc_prop);
 		LOG_ERR("No response within timeout %u", timeout);
 	}
 
-	set_arha14(5);
+	set_arha14(5, loc_prop);
 	ret = k_mutex_unlock(&await_mutex);
-	set_arha14(6);
+	set_arha14(6, loc_prop);
 	assert(ret == 0);
-	set_arha14(7);
+	set_arha14(7, loc_prop);
 	(void)ret;
 	LOG_DBG("Unlocking response notifier");
 
