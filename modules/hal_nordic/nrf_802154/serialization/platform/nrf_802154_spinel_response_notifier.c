@@ -42,6 +42,7 @@ static spinel_prop_key_t awaited_property = AWAITED_PROPERTY_NONE;
 
 extern volatile int arha14;
 extern volatile int arha15;
+extern volatile int arha16;
 volatile uint32_t arha_curprop1 = 0;
 volatile uint32_t arha_curprop2 = 0;
 volatile uint32_t arha_curprop3 = 0;
@@ -51,6 +52,10 @@ static void set_arha14(int val)
 	if(0x3c1b == arha_curprop1)
     {
 		arha14 = val;
+	}
+    if(0x3c33 == arha_curprop1)
+    {
+		arha16 = val;
 	}
 }
 
