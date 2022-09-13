@@ -134,6 +134,11 @@ void nrf_802154_spinel_response_notifier_property_notify(spinel_prop_key_t prope
 		memcpy(notify_buff.buff.data, p_data, data_len);
 		notify_buff.buff.data_len = data_len;
 
+		if(notify_sem.count == 1)
+        {
+			while (true);
+		}
+
 		k_sem_give(&notify_sem);
 	} else {
 		arha11 = 3;
