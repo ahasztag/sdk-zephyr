@@ -118,7 +118,7 @@ nrf_802154_spinel_notify_buff_t *nrf_802154_spinel_response_notifier_property_aw
 	}
 
 	set_arha14(5, loc_prop);
-	ret = k_mutex_unlock(&await_mutex);
+	// ret = k_mutex_unlock(&await_mutex);
 	set_arha14(6, loc_prop);
 	assert(ret == 0);
 	set_arha14(7, loc_prop);
@@ -130,6 +130,7 @@ nrf_802154_spinel_notify_buff_t *nrf_802154_spinel_response_notifier_property_aw
 
 void nrf_802154_spinel_response_notifier_free(nrf_802154_spinel_notify_buff_t *p_notify)
 {
+	int ret;
 	struct spinel_notify_buff_internal *p_notify_buff_free;
 
 	p_notify_buff_free = CONTAINER_OF(p_notify,
@@ -139,6 +140,10 @@ void nrf_802154_spinel_response_notifier_free(nrf_802154_spinel_notify_buff_t *p
 	assert(p_notify_buff_free == &notify_buff);
 
 	p_notify_buff_free->free = true;
+	ret = k_mutex_unlock(&await_mutex);
+	assert(ret == 0);
+	(void) ret;
+
 }
 
 volatile int arha11 = 0;
