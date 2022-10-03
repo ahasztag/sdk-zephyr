@@ -271,6 +271,34 @@ static int cmd_i2c_read(const struct shell *shell_ctx, size_t argc, char **argv)
 	return ret;
 }
 
+/* i2c speed <device> <speed>
+ * For: speed see constants like I2C_SPEED_STANDARD */
+static int cmd_i2c_speed(const struct shell *shell_ctx, size_t argc, char **argv)
+{
+	char *s_dev_name = argv[ARGV_DEV];
+	const struct device *dev;
+	uint32_t dev_config = 0;
+	int ret;
+
+	dev = device_get_binding(s_dev_name);
+	if (!dev) {
+		shell_error(shell_ctx, "I2C: Device driver %s not found.",
+			    s_dev_name);
+		return -ENODEV;
+	}
+
+	uint32_t speed = strtol(argv[ARGV_DEV + 1], NULL, 10);
+	dev_config = I2C_SPEED_SET(speed);
+
+	ret = i2c_configure(dev, dev_config);
+	if (ret < 0) {
+		shell_error(shell_ctx, "I2C: Failed to configure device: %s",
+			    s_dev_name);
+		return -EIO;
+	}
+	return 0;
+}
+
 static void device_name_get(size_t idx, struct shell_static_entry *entry);
 
 SHELL_DYNAMIC_CMD_CREATE(dsub_device_name, device_name_get);
@@ -304,6 +332,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_i2c_cmds,
 			       SHELL_CMD_ARG(write_byte, &dsub_device_name,
 					     "Write a byte to an I2C device",
 					     cmd_i2c_write_byte, 5, 0),
+			       SHELL_CMD_ARG(speed, &dsub_device_name,
+					     "Configure I2C bus speed",
+					     cmd_i2c_speed, 3, 0),
 			       SHELL_SUBCMD_SET_END     /* Array terminated. */
 			       );
 
