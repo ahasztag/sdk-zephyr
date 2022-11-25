@@ -205,6 +205,16 @@ endif
 
 endmenu # NRF_802154_SER_HOST || NRF_802154_SER_RADIO
 
+if (NRF_802154_RADIO_DRIVER || NRF_802154_SERIALIZATION)
+
+config NRF_802154_CARRIER_FUNCTIONS
+	bool "Enable 802.15.4 carrier functions"
+	help
+	  This option enables functions such as modulated carrier and continuous carrier.
+	  If this option is modified, its remote counterpart must be set to the exact same value.
+
+endif
+
 endmenu # HAS_NORDIC_DRIVERS
 
 rsource "nrfx/Kconfig"
