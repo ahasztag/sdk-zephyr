@@ -487,6 +487,7 @@ sys_rand_fallback:
 /* defined(CONFIG_ENTROPY_HAS_DRIVER) || defined(CONFIG_TEST_RANDOM_GENERATOR) */
 #endif
 
+volatile int arha_z = 0;
 /**
  *
  * @brief Initialize kernel
@@ -500,15 +501,19 @@ sys_rand_fallback:
 __boot_func
 FUNC_NORETURN void z_cstart(void)
 {
+    arha_z = 1;
 	/* gcov hook needed to get the coverage report.*/
 	gcov_static_init();
 
+    arha_z = 2;
 	/* initialize early init calls */
 	z_sys_init_run_level(INIT_LEVEL_EARLY);
 
+    arha_z = 3;
 	/* perform any architecture-specific initialization */
 	arch_kernel_init();
 
+    arha_z = 4;
 	LOG_CORE_INIT();
 
 #if defined(CONFIG_MULTITHREADING)
@@ -520,10 +525,12 @@ FUNC_NORETURN void z_cstart(void)
 	z_dummy_thread_init(&dummy_thread);
 #endif
 	/* do any necessary initialization of static devices */
+    arha_z = 5;
 	z_device_state_init();
-
+    arha_z = 6;
 	/* perform basic hardware initialization */
 	z_sys_init_run_level(INIT_LEVEL_PRE_KERNEL_1);
+    arha_z = 7;
 	z_sys_init_run_level(INIT_LEVEL_PRE_KERNEL_2);
 
 #ifdef CONFIG_STACK_CANARIES

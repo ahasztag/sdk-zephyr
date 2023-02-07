@@ -253,18 +253,28 @@ extern FUNC_NORETURN void z_cstart(void);
  * This routine prepares for the execution of and runs C code.
  *
  */
+volatile int arha_y = 0;
+
 void z_arm_prep_c(void)
 {
+    arha_y = 1;
 	relocate_vector_table();
+    arha_y = 2;
 #if defined(CONFIG_CPU_HAS_FPU)
 	z_arm_floating_point_init();
 #endif
+    arha_y = 3;
 	z_bss_zero();
+    arha_y = 4;
 	z_data_copy();
+    arha_y = 5;
 #if ((defined(CONFIG_ARMV7_R) || defined(CONFIG_ARMV7_A)) && defined(CONFIG_INIT_STACKS))
 	z_arm_init_stacks();
 #endif
+    arha_y = 6;
 	z_arm_interrupt_init();
+    arha_y = 7;
 	z_cstart();
+    arha_y = 8;
 	CODE_UNREACHABLE;
 }
