@@ -15,6 +15,10 @@
 #include <zephyr/sys_clock.h>
 #include <zephyr/sys/barrier.h>
 #include <hal/nrf_rtc.h>
+#if CONFIG_SOC_NRF5340_CPUNET
+#include <hal/nrf_egu.h>
+#include <hal/nrf_dppi.h>
+#endif
 #include <zephyr/irq.h>
 
 #define EXT_CHAN_COUNT CONFIG_NRF_RTC_TIMER_USER_CHAN_COUNT
@@ -171,7 +175,9 @@ static void compare_int_unlock(int32_t chan, bool key)
 {
 	if (key) {
 		atomic_or(&int_mask, BIT(chan));
+#if CONFIG_SOC_NRF5340_CPUNET
 		nrf_rtc_int_enable(RTC, NRF_RTC_CHANNEL_INT_MASK(chan));
+#endif
 		if (atomic_get(&force_isr_mask) & BIT(chan)) {
 			NVIC_SetPendingIRQ(RTC_IRQn);
 		}
@@ -733,16 +739,40 @@ static int sys_clock_driver_init(void)
 	nrf_rtc_prescaler_set(RTC, 0);
 	for (int32_t chan = 0; chan < CHAN_COUNT; chan++) {
 		cc_data[chan].target_time = TARGET_TIME_INVALID;
+#if CONFIG_SOC_NRF5340_CPUNET
+		nrf_rtc_publish_set(RTC, NRF_RTC_CHANNEL_EVENT_ADDR(chan), 29);
+#else
 		nrf_rtc_int_enable(RTC, NRF_RTC_CHANNEL_INT_MASK(chan));
+#endif
 	}
 
-	nrf_rtc_int_enable(RTC, NRF_RTC_INT_OVERFLOW_MASK);
 
 	NVIC_ClearPendingIRQ(RTC_IRQn);
 
+#if CONFIG_SOC_NRF5340_CPUNET
+	// TEMP: Like this worked OK
+	// nrf_rtc_publish_set(RTC, NRF_RTC_EVENT_OVERFLOW, 29);
+	// nrf_egu_subscribe_set(NRF_EGU0_NS, NRF_EGU_TASK_TRIGGER13, 29); // TEMP
+	// nrf_egu_int_enable(NRF_EGU0_NS, NRF_EGU_INT_TRIGGERED13);
+	// nrf_dppi_channels_enable(NRF_DPPIC_NS, 1 << 29U);
+
+
+	nrf_rtc_event_enable(NRF_RTC1_NS, NRF_RTC_INT_TICK_MASK);
+	nrf_rtc_publish_set(RTC, NRF_RTC_EVENT_OVERFLOW, 29);
+	nrf_rtc_publish_set(RTC, NRF_RTC_EVENT_TICK, 30);
+	nrf_egu_subscribe_set(NRF_EGU0_NS, NRF_EGU_TASK_TRIGGER13, 30);
+	nrf_egu_int_enable(NRF_EGU0_NS, NRF_EGU_INT_TRIGGERED13);
+	nrf_dppi_channels_enable(NRF_DPPIC_NS, 1 << 30U);
+	nrf_dppi_channels_enable(NRF_DPPIC_NS, 1 << 29U);
+	nrf_dppi_channels_include_in_group(NRF_DPPIC_NS, 1U << 30, NRF_DPPI_CHANNEL_GROUP5);
+	nrf_dppi_subscribe_set(NRF_DPPIC_NS, NRF_DPPI_TASK_CHG5_EN, 29);
+	nrf_dppi_subscribe_set(NRF_DPPIC_NS, NRF_DPPI_TASK_CHG5_DIS, 30);
+#else
+	nrf_rtc_int_enable(RTC, NRF_RTC_INT_OVERFLOW_MASK);
 	IRQ_CONNECT(RTC_IRQn, DT_IRQ(DT_NODELABEL(RTC_LABEL), priority),
 		    rtc_nrf_isr, 0, 0);
 	irq_enable(RTC_IRQn);
+#endif
 
 	nrf_rtc_task_trigger(RTC, NRF_RTC_TASK_CLEAR);
 	nrf_rtc_task_trigger(RTC, NRF_RTC_TASK_START);
