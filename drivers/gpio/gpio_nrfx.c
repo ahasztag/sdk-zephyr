@@ -88,7 +88,7 @@ static int gpio_nrfx_gpd_retain_set(const struct device *port, uint32_t mask, gp
 	return 0;
 }
 
-static int gpio_nrfx_gpd_retain_clear(const struct device *port, uint32_t mask)
+int gpio_nrfx_gpd_retain_clear(const struct device *port, uint32_t mask)
 {
 #ifdef CONFIG_SOC_NRF54H20_GPD
 	const struct gpio_nrfx_cfg *cfg = get_port_cfg(port);

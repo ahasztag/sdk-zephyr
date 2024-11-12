@@ -228,6 +228,7 @@ static inline int spi_context_cs_configure_all(struct spi_context *ctx)
 		if (ret < 0) {
 			return ret;
 		}
+		gpio_nrfx_gpd_retain_clear(cs_gpio->port, BIT(cs_gpio->pin));
 	}
 
 	return 0;
