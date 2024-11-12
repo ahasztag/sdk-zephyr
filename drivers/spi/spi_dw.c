@@ -45,6 +45,10 @@ LOG_MODULE_REGISTER(spi_dw);
 #include <nrfx.h>
 #endif
 
+#ifdef CONFIG_SOC_NRF54H20_GPD
+#include <nrf/gpd.h>
+#endif
+
 static inline bool spi_dw_is_slave(struct spi_dw_data *spi)
 {
 	return (IS_ENABLED(CONFIG_SPI_SLAVE) &&
@@ -570,6 +574,9 @@ int spi_dw_init(const struct device *dev)
 
 	LOG_DBG("Designware SPI driver initialized on device: %p", dev);
 
+#ifdef CONFIG_SOC_NRF54H20_GPD
+	nrf_gpd_request(NRF_GPD_FAST_ACTIVE1);
+#endif
 	err = spi_context_cs_configure_all(&spi->ctx);
 	if (err < 0) {
 		return err;
