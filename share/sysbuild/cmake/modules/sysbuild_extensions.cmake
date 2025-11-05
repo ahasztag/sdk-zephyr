@@ -217,7 +217,7 @@ endfunction()
 #
 function(ExternalZephyrProject_Add)
   set(app_types MAIN BOOTLOADER FIRMWARE_LOADER)
-  cmake_parse_arguments(ZBUILD "" "APPLICATION;BOARD;BOARD_REVISION;SOURCE_DIR;APP_TYPE;BUILD_ONLY" "" ${ARGN})
+  cmake_parse_arguments(ZBUILD "" "APPLICATION;BOARD;BOARD_REVISION;SOURCE_DIR;APP_TYPE;BUILD_ONLY;CONFIGURE_ONLY" "" ${ARGN})
 
   if(ZBUILD_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR
@@ -366,6 +366,11 @@ function(ExternalZephyrProject_Add)
     )
   endforeach()
 
+  set(build_command ${CMAKE_COMMAND} --build .)
+  # if(ZBUILD_CONFIGURE_ONLY)
+  #   set(build_command ${CMAKE_COMMAND} --build . --target config-twister)
+  # endif()
+
   include(ExternalProject)
   set(application_binary_dir ${CMAKE_BINARY_DIR}/${ZBUILD_APPLICATION})
   ExternalProject_Add(
@@ -378,7 +383,7 @@ function(ExternalZephyrProject_Add)
                -DSYSBUILD_CACHE:FILEPATH=${sysbuild_cache_file}
                ${shared_cmake_vars_argument}
                ${image_extra_kconfig_targets}
-    BUILD_COMMAND ${CMAKE_COMMAND} --build .
+    BUILD_COMMAND ${build_command}
     INSTALL_COMMAND ""
     BUILD_ALWAYS True
     USES_TERMINAL_BUILD True
