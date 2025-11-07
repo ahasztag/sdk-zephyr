@@ -30,6 +30,9 @@ endchoice
 
 if BOOTLOADER_MCUBOOT
 
+config BOOTLOADER_MCUBOOT_ONLY_IMAGES
+	bool "MCUboot build only images"
+
 choice MCUBOOT_MODE
 	prompt "Mode of operation"
 	# Should be removed if board dts is updated

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Include MCUboot if enabled.
-if(SB_CONFIG_BOOTLOADER_MCUBOOT)
+if(SB_CONFIG_BOOTLOADER_MCUBOOT AND NOT SB_CONFIG_BOOTLOADER_MCUBOOT_ONLY_IMAGES)
   set(image mcuboot)
   ExternalZephyrProject_Add(
     APPLICATION ${image}
