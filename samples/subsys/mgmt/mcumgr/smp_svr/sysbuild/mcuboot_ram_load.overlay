@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+#include "../retention.overlay"
+
  / {
 	chosen {
 		/* We need to point where we want to place MCUboot code. */
@@ -19,6 +21,6 @@
 &cpuapp_sram {
 	compatible = "mmio-sram";
 	/delete-property/ reg;
-	reg = < 0x20077c00 0x8000 >;
-	ranges = < 0x0 0x20077c00 0x8000 >;
+	reg = < 0x20077c00 0x7c00 >;
+	ranges = < 0x0 0x20077c00 0x7c00 >;
 };
